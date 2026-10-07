@@ -1,0 +1,352 @@
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS audit_logs;
+DROP TABLE IF EXISTS lead_notes;
+DROP TABLE IF EXISTS leads;
+DROP TABLE IF EXISTS login_attempts;
+DROP TABLE IF EXISTS role_permissions;
+DROP TABLE IF EXISTS permissions;
+DROP TABLE IF EXISTS media;
+DROP TABLE IF EXISTS gallery_items;
+DROP TABLE IF EXISTS faqs;
+DROP TABLE IF EXISTS testimonials;
+DROP TABLE IF EXISTS blog_posts;
+DROP TABLE IF EXISTS blog_categories;
+DROP TABLE IF EXISTS events;
+DROP TABLE IF EXISTS team_members;
+DROP TABLE IF EXISTS school_programs;
+DROP TABLE IF EXISTS schools;
+DROP TABLE IF EXISTS service_packages;
+DROP TABLE IF EXISTS service_faqs;
+DROP TABLE IF EXISTS services;
+DROP TABLE IF EXISTS service_categories;
+DROP TABLE IF EXISTS pages;
+DROP TABLE IF EXISTS homepage_sections;
+DROP TABLE IF EXISTS menu_items;
+DROP TABLE IF EXISTS settings;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS roles;
+
+CREATE TABLE roles (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(80) NOT NULL,
+  slug VARCHAR(80) NOT NULL UNIQUE,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE permissions (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  slug VARCHAR(120) NOT NULL UNIQUE
+) ENGINE=InnoDB;
+
+CREATE TABLE role_permissions (
+  role_id INT UNSIGNED NOT NULL,
+  permission_id INT UNSIGNED NOT NULL,
+  PRIMARY KEY (role_id, permission_id),
+  CONSTRAINT fk_rp_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
+  CONSTRAINT fk_rp_perm FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE users (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  role_id INT UNSIGNED NOT NULL,
+  full_name VARCHAR(120) NOT NULL,
+  email VARCHAR(190) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  status TINYINT(1) NOT NULL DEFAULT 1,
+  last_login_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NULL,
+  CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES roles(id)
+) ENGINE=InnoDB;
+
+CREATE TABLE login_attempts (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(190) NOT NULL,
+  ip_address VARCHAR(45) NOT NULL,
+  success TINYINT(1) NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL,
+  INDEX idx_login_email_time (email, created_at),
+  INDEX idx_login_ip_time (ip_address, created_at)
+) ENGINE=InnoDB;
+
+CREATE TABLE menu_items (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(120) NOT NULL,
+  slug VARCHAR(160) NOT NULL,
+  url VARCHAR(255) NOT NULL,
+  parent_id INT UNSIGNED NOT NULL DEFAULT 0,
+  sort_order INT NOT NULL DEFAULT 0,
+  status TINYINT(1) NOT NULL DEFAULT 1,
+  target VARCHAR(20) NOT NULL DEFAULT '_self',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NULL,
+  INDEX idx_menu_parent (parent_id, sort_order, status)
+) ENGINE=InnoDB;
+
+CREATE TABLE pages (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(180) NOT NULL,
+  slug VARCHAR(180) NOT NULL UNIQUE,
+  body MEDIUMTEXT NULL,
+  banner_image VARCHAR(255) NULL,
+  seo_title VARCHAR(180) NULL,
+  seo_description VARCHAR(255) NULL,
+  og_image VARCHAR(255) NULL,
+  status TINYINT(1) NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE service_categories (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(120) NOT NULL,
+  slug VARCHAR(120) NOT NULL UNIQUE,
+  intro TEXT NULL,
+  banner_image VARCHAR(255) NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  status TINYINT(1) NOT NULL DEFAULT 1,
+  seo_title VARCHAR(180) NULL,
+  seo_description VARCHAR(255) NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE services (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  category_id INT UNSIGNED NOT NULL,
+  title VARCHAR(180) NOT NULL,
+  slug VARCHAR(180) NOT NULL,
+  excerpt TEXT NULL,
+  intro TEXT NULL,
+  overview MEDIUMTEXT NULL,
+  who_can_apply TEXT NULL,
+  eligibility TEXT NULL,
+  requirements TEXT NULL,
+  documents TEXT NULL,
+  process TEXT NULL,
+  important_info TEXT NULL,
+  icon VARCHAR(80) NULL,
+  image VARCHAR(255) NULL,
+  price_from VARCHAR(80) NULL,
+  price_to VARCHAR(80) NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  status TINYINT(1) NOT NULL DEFAULT 1,
+  featured TINYINT(1) NOT NULL DEFAULT 0,
+  seo_title VARCHAR(180) NULL,
+  seo_description VARCHAR(255) NULL,
+  og_image VARCHAR(255) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NULL,
+  UNIQUE KEY uq_service_cat_slug (category_id, slug),
+  CONSTRAINT fk_service_cat FOREIGN KEY (category_id) REFERENCES service_categories(id)
+) ENGINE=InnoDB;
+
+CREATE TABLE service_faqs (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  service_id INT UNSIGNED NOT NULL,
+  question VARCHAR(255) NOT NULL,
+  answer TEXT NOT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  CONSTRAINT fk_sf_service FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE service_packages (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  service_id INT UNSIGNED NOT NULL,
+  title VARCHAR(120) NOT NULL,
+  price VARCHAR(80) NULL,
+  description VARCHAR(255) NULL,
+  features TEXT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  CONSTRAINT fk_sp_service FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE schools (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(180) NOT NULL,
+  slug VARCHAR(180) NOT NULL UNIQUE,
+  logo VARCHAR(255) NULL,
+  image VARCHAR(255) NULL,
+  location VARCHAR(180) NULL,
+  province VARCHAR(80) NOT NULL,
+  city VARCHAR(80) NULL,
+  description TEXT NULL,
+  website VARCHAR(255) NULL,
+  featured TINYINT(1) NOT NULL DEFAULT 0,
+  status TINYINT(1) NOT NULL DEFAULT 1,
+  seo_title VARCHAR(180) NULL,
+  seo_description VARCHAR(255) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE school_programs (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  school_id INT UNSIGNED NOT NULL,
+  title VARCHAR(180) NOT NULL,
+  description TEXT NULL,
+  CONSTRAINT fk_prog_school FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE team_members (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  full_name VARCHAR(120) NOT NULL,
+  slug VARCHAR(160) NOT NULL UNIQUE,
+  position VARCHAR(120) NULL,
+  photo VARCHAR(255) NULL,
+  biography TEXT NULL,
+  email VARCHAR(190) NULL,
+  phone VARCHAR(40) NULL,
+  social_json TEXT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  status TINYINT(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB;
+
+CREATE TABLE events (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(180) NOT NULL,
+  slug VARCHAR(180) NOT NULL UNIQUE,
+  description MEDIUMTEXT NULL,
+  event_date DATE NULL,
+  start_time TIME NULL,
+  end_time TIME NULL,
+  location VARCHAR(180) NULL,
+  season VARCHAR(40) NULL,
+  image VARCHAR(255) NULL,
+  registration_info TEXT NULL,
+  featured TINYINT(1) NOT NULL DEFAULT 0,
+  status VARCHAR(20) NOT NULL DEFAULT 'published',
+  seo_title VARCHAR(180) NULL,
+  seo_description VARCHAR(255) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE blog_categories (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(120) NOT NULL,
+  slug VARCHAR(120) NOT NULL UNIQUE
+) ENGINE=InnoDB;
+
+CREATE TABLE blog_posts (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  category_id INT UNSIGNED NULL,
+  title VARCHAR(200) NOT NULL,
+  slug VARCHAR(200) NOT NULL UNIQUE,
+  excerpt TEXT NULL,
+  body MEDIUMTEXT NULL,
+  featured_image VARCHAR(255) NULL,
+  author VARCHAR(120) NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'draft',
+  published_at DATETIME NULL,
+  seo_title VARCHAR(180) NULL,
+  seo_description VARCHAR(255) NULL,
+  og_image VARCHAR(255) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NULL,
+  INDEX idx_blog_status_pub (status, published_at),
+  CONSTRAINT fk_blog_cat FOREIGN KEY (category_id) REFERENCES blog_categories(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE testimonials (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  client_name VARCHAR(120) NOT NULL,
+  service_label VARCHAR(180) NULL,
+  quote TEXT NOT NULL,
+  photo VARCHAR(255) NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  status TINYINT(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB;
+
+CREATE TABLE faqs (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  question VARCHAR(255) NOT NULL,
+  answer TEXT NOT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  status TINYINT(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB;
+
+CREATE TABLE gallery_items (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(180) NULL,
+  image VARCHAR(255) NOT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  status TINYINT(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB;
+
+CREATE TABLE leads (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  full_name VARCHAR(120) NOT NULL,
+  email VARCHAR(190) NOT NULL,
+  phone VARCHAR(40) NULL,
+  whatsapp VARCHAR(40) NULL,
+  location VARCHAR(180) NULL,
+  service_id INT UNSIGNED NULL,
+  preferred_contact VARCHAR(40) NULL,
+  message TEXT NULL,
+  source_page VARCHAR(255) NULL,
+  appointment_type VARCHAR(40) NULL,
+  appointment_date DATE NULL,
+  status VARCHAR(40) NOT NULL DEFAULT 'New',
+  admin_notes TEXT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NULL,
+  INDEX idx_leads_status (status, created_at),
+  INDEX idx_leads_email (email),
+  CONSTRAINT fk_lead_service FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE lead_notes (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  lead_id INT UNSIGNED NOT NULL,
+  user_id INT UNSIGNED NULL,
+  note TEXT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_ln_lead FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE CASCADE,
+  CONSTRAINT fk_ln_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE media (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  original_name VARCHAR(255) NULL,
+  path VARCHAR(255) NOT NULL,
+  webp_path VARCHAR(255) NULL,
+  thumb_path VARCHAR(255) NULL,
+  medium_path VARCHAR(255) NULL,
+  mime VARCHAR(80) NULL,
+  width INT NULL,
+  height INT NULL,
+  size_bytes INT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE homepage_sections (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  section_key VARCHAR(80) NOT NULL UNIQUE,
+  title VARCHAR(180) NULL,
+  content_json MEDIUMTEXT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  status TINYINT(1) NOT NULL DEFAULT 1,
+  updated_at DATETIME NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE settings (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  setting_key VARCHAR(80) NOT NULL UNIQUE,
+  setting_value TEXT NULL,
+  updated_at DATETIME NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE audit_logs (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NULL,
+  action VARCHAR(80) NOT NULL,
+  entity VARCHAR(80) NULL,
+  entity_id INT UNSIGNED NULL,
+  details TEXT NULL,
+  ip_address VARCHAR(45) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_audit_created (created_at),
+  CONSTRAINT fk_audit_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+SET FOREIGN_KEY_CHECKS = 1;

@@ -1,0 +1,26 @@
+[2026-10-06 10:26:37] ERROR DB connection failed: SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it
+[2026-10-06 10:26:37] ERROR SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it in D:\Projects\PhpProjects\app\core\Database.php:24
+[2026-10-06 10:29:13] ERROR DB connection failed: SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it
+[2026-10-06 10:29:13] ERROR SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it in D:\Projects\PhpProjects\app\core\Database.php:24
+[2026-10-06 10:35:42] ERROR DB connection failed: SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it
+[2026-10-06 10:35:42] ERROR SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it in D:\Projects\PhpProjects\app\core\Database.php:24
+[2026-10-06 10:35:56] ERROR DB connection failed: SQLSTATE[HY000] [1049] Unknown database 'four_seasons_canada'
+[2026-10-06 10:35:56] ERROR SQLSTATE[HY000] [1049] Unknown database 'four_seasons_canada' in D:\Projects\PhpProjects\app\core\Database.php:24
+[2026-10-06 10:35:56] ERROR DB connection failed: SQLSTATE[HY000] [1049] Unknown database 'four_seasons_canada'
+[2026-10-06 10:35:56] ERROR SQLSTATE[HY000] [1049] Unknown database 'four_seasons_canada' in D:\Projects\PhpProjects\app\core\Database.php:24
+[2026-10-06 10:35:57] ERROR DB connection failed: SQLSTATE[HY000] [1049] Unknown database 'four_seasons_canada'
+[2026-10-06 10:35:57] ERROR SQLSTATE[HY000] [1049] Unknown database 'four_seasons_canada' in D:\Projects\PhpProjects\app\core\Database.php:24
+[2026-10-06 10:35:57] ERROR DB connection failed: SQLSTATE[HY000] [1049] Unknown database 'four_seasons_canada'
+[2026-10-06 10:35:57] ERROR SQLSTATE[HY000] [1049] Unknown database 'four_seasons_canada' in D:\Projects\PhpProjects\app\core\Database.php:24
+[2026-10-06 10:35:57] ERROR DB connection failed: SQLSTATE[HY000] [1049] Unknown database 'four_seasons_canada'
+[2026-10-06 10:35:57] ERROR SQLSTATE[HY000] [1049] Unknown database 'four_seasons_canada' in D:\Projects\PhpProjects\app\core\Database.php:24
+[2026-10-06 11:00:01] ERROR Cannot access offset of type string on string in D:\Projects\PhpProjects\app\views\schools\index.php:1
+[2026-10-06 11:00:52] ERROR Cannot access offset of type string on string in D:\Projects\PhpProjects\app\views\schools\index.php:1
+[2026-10-06 11:31:28] ERROR Failed opening required 'D:\Projects\PhpProjects/app/views/partials/mission-credibility.php' (include_path='.;C:\php\pear') in D:\Projects\PhpProjects\app\views\pages\home.php:10
+[2026-10-06 11:31:29] ERROR Failed opening required 'D:\Projects\PhpProjects/app/views/partials/mission-credibility.php' (include_path='.;C:\php\pear') in D:\Projects\PhpProjects\app\views\pages\home.php:10
+[2026-10-06 11:31:35] ERROR Failed opening required 'D:\Projects\PhpProjects/app/views/partials/mission-credibility.php' (include_path='.;C:\php\pear') in D:\Projects\PhpProjects\app\views\pages\home.php:10
+[2026-10-06 11:31:49] ERROR Failed opening required 'D:\Projects\PhpProjects/app/views/partials/mission-credibility.php' (include_path='.;C:\php\pear') in D:\Projects\PhpProjects\app\views\pages\home.php:10
+[2026-10-06 11:43:49] ERROR Failed opening required 'D:\Projects\PhpProjects/app/views/Mission/Vision/page-hero.php' (include_path='.;C:\php\pear') in D:\Projects\PhpProjects\app\views\services\show.php:1
+[2026-10-06 11:43:51] ERROR Failed opening required 'D:\Projects\PhpProjects/app/views/Mission/Vision/page-hero.php' (include_path='.;C:\php\pear') in D:\Projects\PhpProjects\app\views\services\show.php:1
+[2026-10-07 11:57:12] ERROR DB connection failed: SQLSTATE[HY000] [1045] Access denied for user 'wiseboxp_academysql'@'localhost' (using password: YES)
+[2026-10-07 11:57:12] ERROR SQLSTATE[HY000] [1045] Access denied for user 'wiseboxp_academysql'@'localhost' (using password: YES) in D:\Projects\laragon\www\fourseasons\app\core\Database.php:24
