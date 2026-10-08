@@ -8,7 +8,12 @@ spl_autoload_register(static function (string $class): void {
         return;
     }
     $relative = substr($class, strlen($prefix));
-    $path = APP_PATH . '/' . str_replace('\\', '/', $relative) . '.php';
+    $parts = explode('\\', $relative);
+    // Application directories are lowercase on disk; class filenames retain
+    // their declared capitalization. This matters on Linux hosting.
+    $className = array_pop($parts);
+    $directory = $parts === [] ? '' : implode('/', array_map('strtolower', $parts)) . '/';
+    $path = APP_PATH . '/' . $directory . $className . '.php';
     if (is_file($path)) {
         require $path;
     }
@@ -30,7 +35,12 @@ if ($config['app']['debug']) {
 }
 
 set_exception_handler(static function (Throwable $e) use ($config): void {
-    App\Core\Logger::error($e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+    try {
+        App\Core\Logger::error($e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+    } catch (Throwable $loggingError) {
+        error_log('Application exception: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+        error_log('Application logger failure: ' . $loggingError->getMessage());
+    }
     http_response_code(500);
     if ($config['app']['debug']) {
         echo '<pre>' . htmlspecialchars($e->getMessage() . "\n" . $e->getTraceAsString()) . '</pre>';
@@ -47,7 +57,7 @@ set_exception_handler(static function (Throwable $e) use ($config): void {
 App\Core\Database::init($config['db']);
 App\Core\Session::start($config['app']);
 
-require APP_PATH . '/Helpers/functions.php';
+require APP_PATH . '/helpers/functions.php';
 
 $router = new App\Core\Router();
 require BASE_PATH . '/config/routes.php';

@@ -394,7 +394,7 @@ INSERT INTO pages (title, slug, body, seo_title, seo_description, status) VALUES
 'Privacy Policy | Four Seasons Canada', 'How inquiry data is used.', 1);
 
 INSERT INTO homepage_sections (section_key, title, content_json, sort_order, status, updated_at) VALUES
-('hero', 'Ask Anything', '{"headline":"ASK ANYTHING","subhead":"We will CALL you back","cta":"CONTACT ME","event_title":"Get to know Canada''s universities","event_cta":"REGISTER NOW"}', 1, 1, NOW()),
+('hero', 'Turning Visa Dreams Into New Beginnings', '{"headline":"Turning Visa Dreams Into New Beginnings!","subhead":"Your Future Abroad Starts With Us!","cta":"CONTACT ME","event_title":"Get to know Canada''s universities","event_cta":"REGISTER NOW"}', 1, 1, NOW()),
 ('did_you_know', 'Did You Know', '{"headline":"DID YOU KNOW there are over 60 options to immigrate to Canada?","text":"We assess your eligibility across available pathways. Find out whether a Canadian option may fit your profile.","cta":"COMPLETE EVALUATION"}', 2, 1, NOW()),
 ('about_stats', 'Leading Immigration Expert', '{"heading":"Leading Immigration Expert","mission_title":"our mission","vision_title":"our vision"}', 3, 1, NOW()),
 ('promo', 'Promo', '{"headline":"Seasonal school intake briefing","text":"Ask about current college and university intakes and related visa timelines.","cta":"REQUEST RETURN-CALL"}', 9, 1, NOW());

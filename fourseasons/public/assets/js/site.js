@@ -50,7 +50,7 @@
     const previous = carousel.querySelector('[data-hero-prev]');
     const next = carousel.querySelector('[data-hero-next]');
     const current = carousel.querySelector('[data-hero-current]');
-    if (slides.length !== 3 || dots.length !== slides.length || !previous || !next) return;
+    if (!slides.length || dots.length !== slides.length || !previous || !next) return;
 
     let activeIndex = Math.max(0, slides.findIndex((slide) => slide.classList.contains('is-active')));
     let rotationTimer;
@@ -200,33 +200,80 @@
 
   document.querySelectorAll('[data-credibility-carousel]').forEach((carousel) => {
     const viewport = carousel.querySelector('[data-credibility-viewport]');
-    const cards = carousel.querySelectorAll('.credibility-card');
-    const previous = carousel.querySelector('[data-credibility-prev]');
-    const next = carousel.querySelector('[data-credibility-next]');
-    if (!viewport || !cards.length || !previous || !next) return;
-    const step = () => {
-      const styles = window.getComputedStyle(viewport.querySelector('.credibility-track'));
-      const gap = parseFloat(styles.columnGap || styles.gap) || 0;
-      return cards[0].getBoundingClientRect().width + gap;
+    const track = carousel.querySelector('.credibility-track');
+    const cards = [...carousel.querySelectorAll('.credibility-card')];
+    if (!viewport || !track || !cards.length) return;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const originals = cards.map((card) => card.cloneNode(true));
+    originals.forEach((card) => {
+      card.setAttribute('aria-hidden', 'true');
+      card.querySelectorAll('[id]').forEach((element) => element.removeAttribute('id'));
+      track.append(card);
+    });
+    let frameId;
+    let previousFrameTime = 0;
+    let isHovered = false;
+    let hasFocus = false;
+    const loopWidth = () => track.scrollWidth / 2;
+    const stopAnimation = () => {
+      window.cancelAnimationFrame(frameId);
+      frameId = undefined;
+      previousFrameTime = 0;
     };
-    previous.addEventListener('click', () => {
-      if (viewport.scrollLeft <= 1) viewport.scrollTo({ left: viewport.scrollWidth, behavior: 'smooth' });
-      else viewport.scrollBy({ left: -step(), behavior: 'smooth' });
+    const animate = (time) => {
+      if (!previousFrameTime) previousFrameTime = time;
+      const elapsed = Math.min(time - previousFrameTime, 40);
+      previousFrameTime = time;
+      const width = loopWidth();
+      if (width > 0) {
+        viewport.scrollLeft += elapsed * .045;
+        if (viewport.scrollLeft >= width) viewport.scrollLeft -= width;
+      }
+      frameId = window.requestAnimationFrame(animate);
+    };
+    const startAnimation = () => {
+      stopAnimation();
+      if (document.hidden || isHovered || hasFocus || reducedMotion.matches) return;
+      frameId = window.requestAnimationFrame(animate);
+    };
+    carousel.addEventListener('pointerenter', () => {
+      isHovered = true;
+      stopAnimation();
     });
-    next.addEventListener('click', () => {
-      if (viewport.scrollLeft + viewport.clientWidth >= viewport.scrollWidth - 2) viewport.scrollTo({ left: 0, behavior: 'smooth' });
-      else viewport.scrollBy({ left: step(), behavior: 'smooth' });
+    carousel.addEventListener('pointerleave', () => {
+      isHovered = false;
+      startAnimation();
     });
+    carousel.addEventListener('focusin', () => {
+      hasFocus = true;
+      stopAnimation();
+    });
+    carousel.addEventListener('focusout', (event) => {
+      if (carousel.contains(event.relatedTarget)) return;
+      hasFocus = false;
+      startAnimation();
+    });
+    document.addEventListener('visibilitychange', startAnimation);
+    reducedMotion.addEventListener?.('change', startAnimation);
+    startAnimation();
   });
 
   const revealTargets = document.querySelectorAll(
-    '.mission-grid > *, .service-card, .school-card, .team-card, .event-row, .news-card, .stat-item, .credibility-card'
+    '.intro-grid > *, .mission-grid > *, .section-heading > div, .services-heading, .credibility-heading, .service-card, .school-card, .team-feature-visual, .team-showcase-content, .event-row, .news-card, .stat-item, .credibility-card, .quote-inner, .contact-band-inner > *'
   );
   if ('IntersectionObserver' in window && revealTargets.length) {
     document.documentElement.classList.add('has-reveal');
     revealTargets.forEach((element, index) => {
-      element.setAttribute('data-reveal', '');
-      element.style.transitionDelay = `${Math.min(index % 4, 3) * 70}ms`;
+      const bounds = element.getBoundingClientRect();
+      const elementCenter = bounds.left + bounds.width / 2;
+      const sideThreshold = window.innerWidth * 0.46;
+      const direction = elementCenter < sideThreshold
+        ? 'left'
+        : elementCenter > window.innerWidth - sideThreshold
+          ? 'right'
+          : 'up';
+      element.setAttribute('data-reveal', direction);
+      element.style.transitionDelay = `${Math.min(index % 4, 3) * 100}ms`;
     });
     const revealObserver = new IntersectionObserver((entries, observer) => {
       entries.forEach((entry) => {
@@ -258,4 +305,141 @@
     }, { threshold: 0.12 });
     revealTargets.forEach((element) => revealObserver.observe(element));
   }
+
+  document.querySelectorAll('.schools-section').forEach((section) => {
+    const filters = [...section.querySelectorAll('[data-school-filter]')];
+    const cards = [...section.querySelectorAll('[data-school-location]')];
+    if (!filters.length || !cards.length) return;
+
+    filters.forEach((filter) => {
+      filter.addEventListener('click', () => {
+        const selectedLocation = filter.dataset.schoolFilter;
+        filters.forEach((button) => {
+          const active = button === filter;
+          button.classList.toggle('is-active', active);
+          button.setAttribute('aria-pressed', String(active));
+        });
+        cards.forEach((card) => {
+          const visible = selectedLocation === 'all' || card.dataset.schoolLocation === selectedLocation;
+          card.hidden = !visible;
+          if (visible) card.classList.add('is-visible');
+        });
+      });
+    });
+  });
+
+  document.querySelectorAll('[data-team-showcase]').forEach((showcase) => {
+    const choices = [...showcase.querySelectorAll('[data-team-choice]')];
+    const visual = showcase.querySelector('.team-feature-visual');
+    const picker = showcase.querySelector('.team-member-picker');
+    const pickerViewport = showcase.querySelector('.team-picker-viewport');
+    const name = showcase.querySelector('[data-team-feature-name]');
+    const role = showcase.querySelector('[data-team-feature-role]');
+    const bio = showcase.querySelector('[data-team-feature-bio]');
+    const dots = [...showcase.querySelectorAll('[data-team-dot]')];
+    const previous = showcase.querySelector('[data-team-prev]');
+    const next = showcase.querySelector('[data-team-next]');
+    if (!choices.length || !visual || !name || !role || !bio || !picker || !pickerViewport) return;
+
+    let activeIndex = Math.max(0, choices.findIndex((choice) => choice.classList.contains('is-active')));
+    const showMember = (index) => {
+      activeIndex = (index + choices.length) % choices.length;
+      const choice = choices[activeIndex];
+      const fullName = choice.dataset.name || '';
+      const photo = choice.dataset.photo || '';
+      let image = visual.querySelector('[data-team-feature-image]');
+      let initial = visual.querySelector('[data-team-feature-initial]');
+
+      name.textContent = fullName;
+      role.textContent = choice.dataset.role || '';
+      bio.textContent = choice.dataset.bio || '';
+      if (photo) {
+        if (!image) {
+          image = document.createElement('img');
+          image.className = 'team-feature-image';
+          image.dataset.teamFeatureImage = '';
+          visual.prepend(image);
+        }
+        image.src = photo;
+        image.alt = fullName;
+        image.hidden = false;
+        if (initial) initial.hidden = true;
+      } else {
+        if (!initial) {
+          initial = document.createElement('div');
+          initial.className = 'team-feature-initial';
+          initial.dataset.teamFeatureInitial = '';
+          visual.append(initial);
+        }
+        initial.textContent = fullName.charAt(0).toUpperCase();
+        initial.hidden = false;
+        if (image) image.hidden = true;
+      }
+
+      choices.forEach((button, buttonIndex) => {
+        const active = buttonIndex === activeIndex;
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+      dots.forEach((dot, dotIndex) => {
+        const active = dotIndex === activeIndex;
+        dot.classList.toggle('is-active', active);
+        dot.setAttribute('aria-pressed', String(active));
+      });
+
+      const visibleCount = Math.max(1, Math.floor(pickerViewport.clientWidth / (choices[0].getBoundingClientRect().width + 12)));
+      const maxStart = Math.max(0, choices.length - visibleCount);
+      const start = Math.max(0, Math.min(activeIndex, maxStart));
+      const cardGap = Number.parseFloat(getComputedStyle(picker).gap) || 12;
+      const cardWidth = choices[0].getBoundingClientRect().width;
+      picker.style.transform = `translateX(-${start * (cardWidth + cardGap)}px)`;
+    };
+
+    choices.forEach((choice, index) => choice.addEventListener('click', () => showMember(index)));
+    dots.forEach((dot, index) => dot.addEventListener('click', () => showMember(index)));
+    previous?.addEventListener('click', () => showMember(activeIndex - 1));
+    next?.addEventListener('click', () => showMember(activeIndex + 1));
+    window.addEventListener('resize', () => showMember(activeIndex));
+
+    window.setInterval(() => {
+      const bounds = showcase.getBoundingClientRect();
+      const inView = bounds.top < window.innerHeight && bounds.bottom > 0;
+      if (!inView || document.hidden || showcase.matches(':hover') || showcase.contains(document.activeElement) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      showMember(activeIndex + 1);
+    }, 6500);
+    showMember(activeIndex);
+  });
+
+  document.querySelectorAll('[data-testimonial-carousel]').forEach((carousel) => {
+    const slides = [...carousel.querySelectorAll('[data-testimonial-slide]')];
+    const dots = [...carousel.querySelectorAll('[data-testimonial-dot]')];
+    const previous = carousel.querySelector('[data-testimonial-prev]');
+    const next = carousel.querySelector('[data-testimonial-next]');
+    if (slides.length < 2 || dots.length !== slides.length) return;
+
+    let activeIndex = Math.max(0, slides.findIndex((slide) => slide.classList.contains('is-active')));
+    const showSlide = (index) => {
+      activeIndex = (index + slides.length) % slides.length;
+      slides.forEach((slide, slideIndex) => {
+        const active = slideIndex === activeIndex;
+        slide.classList.toggle('is-active', active);
+        slide.setAttribute('aria-hidden', String(!active));
+      });
+      dots.forEach((dot, dotIndex) => {
+        const active = dotIndex === activeIndex;
+        dot.classList.toggle('is-active', active);
+        dot.setAttribute('aria-pressed', String(active));
+      });
+    };
+
+    dots.forEach((dot, index) => dot.addEventListener('click', () => showSlide(index)));
+    previous?.addEventListener('click', () => showSlide(activeIndex - 1));
+    next?.addEventListener('click', () => showSlide(activeIndex + 1));
+    window.setInterval(() => {
+      const bounds = carousel.getBoundingClientRect();
+      const visible = bounds.top < window.innerHeight && bounds.bottom > 0;
+      if (!visible || document.hidden || carousel.matches(':hover') || carousel.contains(document.activeElement) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      showSlide(activeIndex + 1);
+    }, 3000);
+  });
 })();
